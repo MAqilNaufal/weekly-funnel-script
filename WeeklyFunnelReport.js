@@ -1,12 +1,17 @@
 // ============================================================
 // WEEKLY FUNNEL REPORT — Apps Script
-// Spreadsheet: CRM Main (1L9S25h79CdH9QarN-_0dnkXogeVx1vJ5C4oXKt_8G-c)
+// Own folder copies (MAqilNaufal):
+//   CRM:  1p7yAkcIEyr36i2iGGZSjGBI0x9DHDqdsEfeTXzOz3lg
+//   Ads:  1poEb4CzVjpf9uRGWl773Mo0cslqnWbB9uHWbQAC-LnA
+// Original sources (read-only reference, do not edit):
+//   CRM:  1L9S25h79CdH9QarN-_0dnkXogeVx1vJ5C4oXKt_8G-c
+//   Ads:  1M27qJ3VsBMd1VvYSOBblixZwWKx_1lJ9ONHGptyiFbY
 // ============================================================
 
 const CONFIG = {
-  // Spreadsheet IDs
-  SS_MAIN:      '1L9S25h79CdH9QarN-_0dnkXogeVx1vJ5C4oXKt_8G-c',
-  SS_ADS:       '1M27qJ3VsBMd1VvYSOBblixZwWKx_1lJ9ONHGptyiFbY',
+  // Spreadsheet IDs — own folder copies
+  SS_MAIN:      '1p7yAkcIEyr36i2iGGZSjGBI0x9DHDqdsEfeTXzOz3lg',
+  SS_ADS:       '1poEb4CzVjpf9uRGWl773Mo0cslqnWbB9uHWbQAC-LnA',
   SS_MKT_CODE:  '1aC7I0eDB1IA_0_T-VCbvxM78qfRKQcogScy-6495vvM',
   SS_CREATIVE:  '1DAGe0MrJNjDn06jm0ePHdKztGnx0XIxDdtQt1GiFtPc',
 

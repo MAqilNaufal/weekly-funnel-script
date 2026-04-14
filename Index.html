@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Weekly Funnel Report</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: #f0f4f8;
+      color: #222;
+      font-size: 14px;
+    }
+
+    header {
+      background: #1a5276;
+      color: white;
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    header h1 { font-size: 18px; font-weight: 600; }
+    header .meta { font-size: 12px; opacity: 0.8; }
+
+    .btn {
+      background: #2e86c1;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+    }
+    .btn:hover { background: #1a6fa8; }
+    .btn:disabled { background: #aaa; cursor: not-allowed; }
+    .btn-outline {
+      background: transparent;
+      border: 1px solid white;
+      color: white;
+    }
+    .btn-outline:hover { background: rgba(255,255,255,0.15); }
+
+    .container { padding: 20px 24px; max-width: 1400px; margin: 0 auto; }
+
+    .status-bar {
+      background: #d6eaf8;
+      border-left: 4px solid #2e86c1;
+      padding: 10px 16px;
+      margin-bottom: 20px;
+      border-radius: 0 6px 6px 0;
+      font-size: 13px;
+      display: none;
+    }
+    .status-bar.error { background: #fadbd8; border-color: #c0392b; }
+    .status-bar.success { background: #d5f5e3; border-color: #1e8449; }
+
+    /* Summary Cards */
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 14px;
+      margin-bottom: 28px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 10px;
+      padding: 16px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    }
+
+    .card .label {
+      font-size: 11px;
+      color: #777;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+    }
+
+    .card .value {
+      font-size: 22px;
+      font-weight: 700;
+      color: #1a5276;
+      margin-bottom: 4px;
+    }
+
+    .card .sub {
+      font-size: 11px;
+      color: #999;
+    }
+
+    .card .delta {
+      display: inline-block;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 2px 6px;
+      border-radius: 4px;
+      margin-top: 4px;
+    }
+
+    .delta.pos { background: #d5f5e3; color: #1e8449; }
+    .delta.neg { background: #fadbd8; color: #c0392b; }
+    .delta.neu { background: #eee; color: #777; }
+
+    /* Section */
+    .section {
+      background: white;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+      margin-bottom: 24px;
+    }
+
+    .section h2 {
+      font-size: 14px;
+      font-weight: 600;
+      color: #1a5276;
+      margin-bottom: 16px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Tables */
+    .table-wrap { overflow-x: auto; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    th {
+      background: #1a5276;
+      color: white;
+      padding: 9px 12px;
+      text-align: left;
+      font-size: 11px;
+      font-weight: 600;
+      white-space: nowrap;
+      position: sticky;
+      top: 0;
+    }
+
+    td {
+      padding: 8px 12px;
+      border-bottom: 1px solid #eee;
+      vertical-align: middle;
+    }
+
+    tr:nth-child(even) td { background: #f8fbfd; }
+    tr:hover td { background: #ebf5fb; }
+
+    td.code { font-weight: 700; color: #1a5276; font-family: monospace; }
+    td.num { text-align: right; }
+    td.rate { text-align: right; color: #555; }
+
+    a.link-btn {
+      display: inline-block;
+      background: #2e86c1;
+      color: white;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      text-decoration: none;
+    }
+    a.link-btn:hover { background: #1a6fa8; }
+
+    /* Spinner */
+    .spinner {
+      display: inline-block;
+      width: 16px; height: 16px;
+      border: 2px solid rgba(255,255,255,0.4);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      vertical-align: middle;
+      margin-right: 6px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .loading-overlay {
+      text-align: center;
+      padding: 48px;
+      color: #888;
+    }
+
+    @media (max-width: 600px) {
+      header { padding: 12px 16px; }
+      .container { padding: 12px 16px; }
+      .card .value { font-size: 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>Weekly Funnel Report</h1>
+    <div class="meta" id="meta">Loading...</div>
+  </div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;">
+    <button class="btn btn-outline" onclick="loadData()">&#8635; Refresh</button>
+    <button class="btn" id="runBtn" onclick="runReport()">&#9654; Run Report Now</button>
+  </div>
+</header>
+
+<div class="container">
+  <div class="status-bar" id="statusBar"></div>
+
+  <div id="content">
+    <div class="loading-overlay">
+      <div class="spinner" style="border-color:rgba(0,0,0,0.2);border-top-color:#2e86c1;"></div>
+      Loading report data...
+    </div>
+  </div>
+</div>
+
+<script>
+  function loadData() {
+    document.getElementById('content').innerHTML = `
+      <div class="loading-overlay">
+        <div class="spinner" style="border-color:rgba(0,0,0,0.2);border-top-color:#2e86c1;"></div>
+        Loading report data...
+      </div>`;
+    google.script.run
+      .withSuccessHandler(renderDashboard)
+      .withFailureHandler(err => showStatus(err.message, 'error'))
+      .getReportData();
+  }
+
+  function runReport() {
+    const btn = document.getElementById('runBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> Running...';
+    showStatus('Generating report... this takes about 10 seconds.', '');
+
+    google.script.run
+      .withSuccessHandler(res => {
+        btn.disabled = false;
+        btn.innerHTML = '&#9654; Run Report Now';
+        if (res.success) {
+          showStatus('Report generated! Refreshing data...', 'success');
+          setTimeout(loadData, 1500);
+        } else {
+          showStatus('Error: ' + res.message, 'error');
+        }
+      })
+      .withFailureHandler(err => {
+        btn.disabled = false;
+        btn.innerHTML = '&#9654; Run Report Now';
+        showStatus('Error: ' + err.message, 'error');
+      })
+      .runReport();
+  }
+
+  function showStatus(msg, type) {
+    const bar = document.getElementById('statusBar');
+    bar.textContent = msg;
+    bar.className = 'status-bar ' + type;
+    bar.style.display = 'block';
+  }
+
+  function deltaClass(val) {
+    if (!val || val === '-') return 'neu';
+    return String(val).startsWith('+') ? 'pos' : 'neg';
+  }
+
+  function fmtNum(v) {
+    if (v === null || v === undefined || v === '') return '-';
+    return v;
+  }
+
+  function renderDashboard(data) {
+    if (data.error) {
+      showStatus(data.error, 'error');
+      document.getElementById('content').innerHTML = '';
+      return;
+    }
+
+    document.getElementById('meta').textContent = (data.weekLabel || '') + '  ·  ' + (data.generated || '');
+
+    // ── Summary Cards ──
+    const cardMetrics = ['Total Platform Leads','Total CRM Leads','Platform → CRM Rate','Total Site Visits','Lead → SV Rate','Total Closings','SV → Closing Rate','Total Revenue'];
+    const cardIcons   = ['📣','💬','🔗','🏠','📈','✅','📊','💰'];
+
+    let cardsHtml = '<div class="cards">';
+    data.summary.forEach((row, i) => {
+      if (!cardMetrics.includes(row.metric)) return;
+      const idx = cardMetrics.indexOf(row.metric);
+      const dc  = deltaClass(row.delta);
+      cardsHtml += `
+        <div class="card">
+          <div class="label">${cardIcons[idx] || ''} ${row.metric}</div>
+          <div class="value">${fmtNum(row.tw)}</div>
+          <div class="sub">Last week: ${fmtNum(row.lw)}</div>
+          ${row.delta && row.delta !== '-' ? `<span class="delta ${dc}">${row.delta}</span>` : ''}
+        </div>`;
+    });
+    cardsHtml += '</div>';
+
+    // ── Detail Table ──
+    let detailHtml = '';
+    if (data.detail && data.detail.length > 0) {
+      const headers = Object.keys(data.detail[0]);
+      detailHtml = `
+        <div class="section">
+          <h2>Ad / Marketing Code Detail (${data.detail.length} codes)</h2>
+          <div class="table-wrap">
+            <table>
+              <thead><tr>${headers.map(h => `<th>${h}</th>`).join('')}</tr></thead>
+              <tbody>
+                ${data.detail.map(row => `<tr>
+                  ${headers.map(h => {
+                    const v = row[h];
+                    if (h === 'Marketing Code') return `<td class="code">${v}</td>`;
+                    if (h === 'Creative Link' && v) return `<td><a class="link-btn" href="${v}" target="_blank">View</a></td>`;
+                    if (h === 'Post Link' && v) return `<td><a class="link-btn" href="${v}" target="_blank">View</a></td>`;
+                    if (h === 'Creative Link' || h === 'Post Link') return `<td>-</td>`;
+                    if (typeof v === 'number') return `<td class="num">${v.toLocaleString('id-ID')}</td>`;
+                    return `<td>${v !== null && v !== undefined ? v : '-'}</td>`;
+                  }).join('')}
+                </tr>`).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>`;
+    }
+
+    // ── Region Table ──
+    let regionHtml = '';
+    if (data.regions && data.regions.length > 0) {
+      const headers = Object.keys(data.regions[0]);
+      regionHtml = `
+        <div class="section">
+          <h2>Breakdown by Project / Team</h2>
+          <div class="table-wrap">
+            <table>
+              <thead><tr>${headers.map(h => `<th>${h}</th>`).join('')}</tr></thead>
+              <tbody>
+                ${data.regions.map(row => `<tr>
+                  ${headers.map((h, i) => {
+                    const v = row[h];
+                    if (i === 0) return `<td><b>${v}</b></td>`;
+                    if (typeof v === 'number') return `<td class="num">${v.toLocaleString('id-ID')}</td>`;
+                    return `<td class="rate">${v !== null && v !== undefined ? v : '-'}</td>`;
+                  }).join('')}
+                </tr>`).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>`;
+    }
+
+    document.getElementById('content').innerHTML = cardsHtml + detailHtml + regionHtml;
+  }
+
+  // Load on page open
+  loadData();
+</script>
+
+</body>
+</html>
